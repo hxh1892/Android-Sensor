@@ -7,7 +7,6 @@ import android.content.pm.PackageManager;
 import android.hardware.Camera;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Vibrator;
 import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -16,35 +15,31 @@ import android.view.SurfaceView;
 import android.view.View;
 import android.widget.Toast;
 
-public class MainActivity extends AppCompatActivity
+public class CAF_Activity extends AppCompatActivity
 {
-    Context mContext = this;
+    private static final int INTENT_CODE_PERMISSION_REQUEST = 100;
 
-    public static final int INTENT_CODE_PERMISSION_REQUEST = 100;
+    private Context mContext = this;
 
-    Vibrator vibrator;
+    private Camera camera;
+    private Camera.Parameters parameters;
 
-    Camera camera;
-    Camera.Parameters parameters;
+    private SurfaceView sv;
+    private SurfaceHolder surfaceHolder;
 
-    SurfaceView sv;
-    SurfaceHolder surfaceHolder;
-
-    boolean isHaveFlashLight = true;
+    private boolean isHaveFlashLight = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.main);
-
-        vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+        setContentView(R.layout.act_caf);
 
         if (android.os.Build.VERSION.SDK_INT >= 23)
         {
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED)
             {
-
+                checkFlashLifht();
             }
             else
             {
@@ -55,9 +50,12 @@ public class MainActivity extends AppCompatActivity
         }
         else
         {
-
+            checkFlashLifht();
         }
+    }
 
+    private void checkFlashLifht()
+    {
         if (getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_FLASH))
         {
             //有闪光灯
@@ -105,29 +103,6 @@ public class MainActivity extends AppCompatActivity
             {
             }
         });
-    }
-
-    //加震动权限
-    //第一个参数，指代一个震动的频率数组。每两个为一组，每组的第一个为等待时间，第二个为震动时间。
-    // 比如 [2000,500,100,400],会先等待2000毫秒，震动500，再等待100，震动400
-    //第二个参数，repest指代从 第几个索引（第一个数组参数） 的位置开始循环震动。
-    //vibrator.vibrate(new long[]{300,500},0);
-    //会一直保持循环，我们需要用 vibrator.cancel()主动终止
-    //设置为-1只震动一次
-
-    public void one(View v)
-    {
-        vibrator.vibrate(new long[]{500, 100, 500, 300}, 0);
-    }
-
-    public void two(View v)
-    {
-        vibrator.vibrate(new long[]{500, 500, 500, 300, 500, 100}, -1);
-    }
-
-    public void stop(View v)
-    {
-        vibrator.cancel();
     }
 
     public void on(View v)
@@ -214,15 +189,20 @@ public class MainActivity extends AppCompatActivity
 
             if (isPermissionOk)
             {
-
+                checkFlashLifht();
             }
-            else if (android.os.Build.VERSION.SDK_INT < 25 &&
-                    !ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.CAMERA))
+            else if (!ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.CAMERA))
             {
                 //启动系统权限设置界面
                 Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
                 intent.setData(Uri.parse("package:" + getPackageName()));
                 startActivity(intent);
+
+                finish();
+            }
+            else
+            {
+                finish();
             }
         }
     }
